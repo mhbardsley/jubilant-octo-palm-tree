@@ -1,11 +1,11 @@
 package pkg
 
-func RunGeneticAlgorithm(config Config, data Data) Individual {
+func RunGeneticAlgorithm(config Config) Individual {
 	population := make([]Individual, config.PopulationSize)
 	for i := range config.PopulationSize {
 		population[i] = GenerateIndividual()
 	}
-	while config.AlgorithmConfig.ContinuingCondition() {
+	for config.AlgorithmConfig.ContinuingCondition() {
 		population = runIteration(population)
 	}
 	return fittestIndividual(population)

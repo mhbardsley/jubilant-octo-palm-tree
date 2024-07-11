@@ -1,3 +1,5 @@
+package pkg
+
 type GeneticAlgorithm interface {
 	GenerateIndividual() Individual
 	ContinuingCondition() bool

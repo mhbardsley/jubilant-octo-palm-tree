@@ -29,3 +29,4 @@ TODO flesh out
 ## Todos
 
 * Collect together Todos here
+* Add linter config
