@@ -3,7 +3,7 @@ package pkg
 func RunGeneticAlgorithm(config Config) Individual {
 	population := make([]Individual, config.PopulationSize)
 	for i := range config.PopulationSize {
-		population[i] = GenerateIndividual()
+		population[i] = config.AlgorithmConfig.GenerateIndividual()
 	}
 	for config.AlgorithmConfig.ContinuingCondition() {
 		population = runIteration(population)
@@ -13,12 +13,27 @@ func RunGeneticAlgorithm(config Config) Individual {
 
 func runIteration(population []Individual) []Individual {
 	newPop := make([]Individual, len(population))
-	for i := range len(population) {
-		ind1, ind2 := SelectForCrossover(population)
-		child := GenerateCrossover(ind1, ind2)  // TODO: test that this is commutative
+	for i := range len(population) {  // TODO: big win for concurrency here
+		ind1, ind2 := selectForCrossover(population)
+		child := ind1.GenerateCrossoverWith(ind2)  // TODO: test that this is commutative
 		newPop[i] = child
 	}
 	return newPop
 }
 
-// TODO: assertion that new populations have the same size in runIteration
+func fittestIndividual(population []Individual) Individual {
+	// TODO: can we make an assumption that it will be nonempty?
+
+	fittest := population[0]
+	for _, individual := range population[1:] {
+		if individual.GetFitness() > fittest.GetFitness() {
+			fittest = individual
+		}
+	}
+
+	return fittest
+}
+
+func selectForCrossover(population []Individual) (Individual, Individual) {
+	return population[0], population[1]
+}

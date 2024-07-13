@@ -7,10 +7,11 @@ import (
 )
 
 func main() {
+	config := pkg.Config{}
+	_ = pkg.RunGeneticAlgorithm(config)
 	// load in the configuration
-	config := pkg.LoadConfiguration()
 	fmt.Println("TODO: processing")
-	selected := pkg.RunGeneticAlgorithm(config, data)  // TODO: is parameter passing the best way to do this?
+	// run algorithm
 	fmt.Println("TODO: handled output")
-	fmt.Println("The selected individual is %s", string(selected)) // TODO: some sort of stringify function
+	// TODO: output individual
 }
