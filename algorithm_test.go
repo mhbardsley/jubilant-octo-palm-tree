@@ -32,10 +32,6 @@ func (m *mockRng) Intn(_ int) int {
 	return m.fixedValue
 }
 
-func TestGeneratePopulation(_ *testing.T) {
-	// TODO: implement
-}
-
 func TestFittestIndividual(t *testing.T) {
 	t.Run("fittest individual is first in the slice", func(t *testing.T) {
 		individuals := []*mockIndividual{

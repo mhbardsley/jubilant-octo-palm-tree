@@ -23,10 +23,10 @@ func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T 
 		return cmp.Compare(a.GetFitness(), b.GetFitness())
 	})
 	newPop := make([]T, len(population))
-	for i := range len(population) { // TODO: big win for concurrency here
+	for i := range len(population) {
 		ind1 := selectForCrossover(population)
 		ind2 := selectForCrossover(population)
-		child := crossoverFunc(ind1, ind2) // TODO: test that this is commutative
+		child := crossoverFunc(ind1, ind2)
 		newPop[i] = child
 	}
 	return newPop
@@ -43,10 +43,7 @@ func fittestIndividual[T Individual](population []T) T {
 	return fittest
 }
 
-// TODO: test
 func selectForCrossover[T Individual](population []T) T {
-	// TODO: this needs implementing
-	// generate a random number between 0 and 1. Then the choice is based off that
 	// we need to assume that this is already sorted, ascending, by fitness, as we use a ranked crossover function
 	// see if we can have a test for this
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
