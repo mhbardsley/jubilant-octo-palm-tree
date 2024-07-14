@@ -27,6 +27,7 @@ func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T 
 		ind1 := selectForCrossover(population)
 		ind2 := selectForCrossover(population)
 		child := crossoverFunc(ind1, ind2)
+		child.Mutate()
 		newPop[i] = child
 	}
 	return newPop
