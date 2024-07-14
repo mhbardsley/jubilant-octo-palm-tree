@@ -2,11 +2,11 @@
 Generic implementation of a genetic algorithm, in Go.
 
 ## Repository structure
-This repository contains a package, as well as a command-line interface for solving a constraint satisfaction problem. The command-line interface is simple, in that it loads in user input, which consists of the configuration for the genetic algorithm, as well as the data. It then makes a limited number of package calls before producing an output in a user-specified manner.
+This repository contains a package for solving a constraint satisfaction problem. Users of this package should be expected to provide a concrete implementation of `Config`, and can then pass this into `RunGeneticAlgorithm` which abstracts the rest of the implementation.
+
+Some examples of how this can be used may be provided in an `examples/` toplevel directory.
 
 TODO: repository structure in ASCII form
-
-TODO: should we just have the package here (like a proper Go package), and its usage elsewhere?
 
 ## TODO: how to run
 
@@ -14,9 +14,10 @@ TODO: should we just have the package here (like a proper Go package), and its u
 It seemed like a fun thing to implement, and it could be useful for some day-to-day tasks.
 
 ## CI/CD pipeline
-The repository contains a test suite. The package is unit tested. The binary is tested in some other way (TODO).
+The repository contains a test suite. The package is unit tested. The examples may also be tested for their validity (TODO).
 
-## TODO: when will the binary terminate?
+## When will the binary terminate?
+The user is expected to provide an implementation of `ContinuingCondition`, which will halt the program and return the fittest individual when that evaluates to false.
 
 ## Input Configuration
 
