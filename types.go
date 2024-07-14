@@ -15,3 +15,7 @@ type Config struct {
 	PopulationSize  int
 	AlgorithmConfig GeneticAlgorithm[Individual]
 }
+
+type rng interface {
+	Intn(int) int
+}
