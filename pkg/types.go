@@ -1,18 +1,17 @@
 package pkg
 
-type GeneticAlgorithm interface {
-	GenerateIndividual() Individual
+type GeneticAlgorithm[T Individual] interface {
+	GenerateIndividual() T
+	GenerateCrossover(T, T) T
 	ContinuingCondition() bool
-	Individual
 }
 
 type Individual interface {
 	GetFitness() float64
 	Mutate()
-	GenerateCrossoverWith(Individual) Individual
 }
 
 type Config struct {
-	PopulationSize uint
-	AlgorithmConfig GeneticAlgorithm
+	PopulationSize  uint
+	AlgorithmConfig GeneticAlgorithm[Individual]
 }

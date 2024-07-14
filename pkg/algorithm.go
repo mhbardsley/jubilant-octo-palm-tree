@@ -6,22 +6,22 @@ func RunGeneticAlgorithm(config Config) Individual {
 		population[i] = config.AlgorithmConfig.GenerateIndividual()
 	}
 	for config.AlgorithmConfig.ContinuingCondition() {
-		population = runIteration(population)
+		population = runIteration(population, config.AlgorithmConfig.GenerateCrossover)
 	}
 	return fittestIndividual(population)
 }
 
-func runIteration(population []Individual) []Individual {
-	newPop := make([]Individual, len(population))
-	for i := range len(population) {  // TODO: big win for concurrency here
+func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T {
+	newPop := make([]T, len(population))
+	for i := range len(population) { // TODO: big win for concurrency here
 		ind1, ind2 := selectForCrossover(population)
-		child := ind1.GenerateCrossoverWith(ind2)  // TODO: test that this is commutative
+		child := crossoverFunc(ind1, ind2) // TODO: test that this is commutative
 		newPop[i] = child
 	}
 	return newPop
 }
 
-func fittestIndividual(population []Individual) Individual {
+func fittestIndividual[T Individual](population []T) T {
 	// TODO: can we make an assumption that it will be nonempty?
 
 	fittest := population[0]
@@ -34,6 +34,6 @@ func fittestIndividual(population []Individual) Individual {
 	return fittest
 }
 
-func selectForCrossover(population []Individual) (Individual, Individual) {
+func selectForCrossover[T Individual](population []T) (T, T) {
 	return population[0], population[1]
 }

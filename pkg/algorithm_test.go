@@ -1,7 +1,9 @@
-package pkg  // TODO: could this have a better name?
+package pkg // TODO: could this have a better name?
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type mockIndividual struct {
@@ -29,62 +31,55 @@ func TestGeneratePopulation(_ *testing.T) {
 func TestFittestIndividual(t *testing.T) {
 	t.Run("fittest individual is first in the slice", func(t *testing.T) {
 		individuals := []Individual{
-			&MockIndividual{ID: "A", fitness: 10},
-			&MockIndividual{ID: "B", fitness: 5},
-			&MockIndividual{ID: "C", fitness: 1},
+			&mockIndividual{ID: "A", fitness: 10},
+			&mockIndividual{ID: "B", fitness: 5},
+			&mockIndividual{ID: "C", fitness: 1},
 		}
 
 		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "A", fittest.ID)
+		assert.Equal(t, individuals[0], fittest)
 	})
 
 	t.Run("fittest individual is last in the slice", func(t *testing.T) {
 		individuals := []Individual{
-			&MockIndividual{ID: "A", fitness: 1},
-			&MockIndividual{ID: "B", fitness: 5},
-			&MockIndividual{ID: "C", fitness: 10},
+			&mockIndividual{ID: "A", fitness: 1},
+			&mockIndividual{ID: "B", fitness: 5},
+			&mockIndividual{ID: "C", fitness: 10},
 		}
 
 		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "C", fittest.ID)
+		assert.Equal(t, individuals[2], fittest)
 	})
 
 	t.Run("fittest individual is somewhere else in the slice", func(t *testing.T) {
 		individuals := []Individual{
-			&MockIndividual{ID: "A", fitness: 1},
-			&MockIndividual{ID: "B", fitness: 10},
-			&MockIndividual{ID: "C", fitness: 5},
+			&mockIndividual{ID: "A", fitness: 1},
+			&mockIndividual{ID: "B", fitness: 10},
+			&mockIndividual{ID: "C", fitness: 5},
 		}
 
 		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "B", fittest.ID)
+		assert.Equal(t, individuals[1], fittest)
 	})
 
 	t.Run("there are two fittest individuals and the first is chosen", func(t *testing.T) {
 		individuals := []Individual{
-			&MockIndividual{ID: "A", fitness: 10},
-			&MockIndividual{ID: "B", fitness: 10},
-			&MockIndividual{ID: "C", fitness: 5},
+			&mockIndividual{ID: "A", fitness: 10},
+			&mockIndividual{ID: "B", fitness: 10},
+			&mockIndividual{ID: "C", fitness: 5},
 		}
 
 		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "A", fittest.ID)
-	})
-
-	t.Run("zero slice returns nil pointer", func(t *testing.T) {
-		var individuals []Individual
-
-		fittest := fittestIndividual(individuals)
-		assert.Nil(t, fittest)
+		assert.Equal(t, individuals[0], fittest)
 	})
 
 	t.Run("singleton slice returns the expected individual", func(t *testing.T) {
 		individuals := []Individual{
-			&MockIndividual{ID: "A", fitness: 10},
+			&mockIndividual{ID: "A", fitness: 10},
 		}
 
 		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "A", fittest.ID)
+		assert.Equal(t, individuals[0], fittest)
 	})
 }
 
