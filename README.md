@@ -17,7 +17,6 @@ The user is expected to provide an implementation of `ContinuingCondition`, whic
 
 ## Todos
 
-* Test it with a toy example
 * Repo structure in ASCII form
 * Concurrency when working with the population
 * Some way of asserting that selectForCrossover is given a sorted list
