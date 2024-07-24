@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"math/rand"
 	"slices"
+	"sync"
 	"time"
 )
 
@@ -23,13 +24,19 @@ func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T 
 		return cmp.Compare(a.GetFitness(), b.GetFitness())
 	})
 	newPop := make([]T, len(population))
+	var wg sync.WaitGroup
 	for i := range len(population) {
-		ind1 := selectForCrossover(population)
-		ind2 := selectForCrossover(population)
-		child := crossoverFunc(ind1, ind2)
-		child.Mutate()
-		newPop[i] = child
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			ind1 := selectForCrossover(population)
+			ind2 := selectForCrossover(population)
+			child := crossoverFunc(ind1, ind2)
+			child.Mutate()
+			newPop[i] = child
+		}(i)
 	}
+	wg.Wait()
 	return newPop
 }
 
