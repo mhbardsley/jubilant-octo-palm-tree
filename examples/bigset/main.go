@@ -46,7 +46,7 @@ type algorithm struct {
 }
 
 func (a *algorithm) ContinuingCondition() bool {
-	return time.Now().Sub(a.startTime) <= 100*time.Second
+	return time.Now().Sub(a.startTime) <= 10*time.Second
 }
 
 func (a *algorithm) GenerateIndividual() algo.Individual {
