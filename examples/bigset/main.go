@@ -60,5 +60,5 @@ func (a *algorithm) GenerateIndividual() algo.Individual {
 }
 
 func (a *algorithm) GenerateCrossover(ind1, ind2 algo.Individual) algo.Individual {
-	return algo.Individual(&individual{append(ind1.(*individual).set[:3], ind2.(*individual).set[3:]...), nil})
+	return algo.Individual(&individual{append(ind1.(*individual).set[:5], ind2.(*individual).set[5:]...), nil})
 }

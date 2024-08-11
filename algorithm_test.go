@@ -25,11 +25,14 @@ func (m *mockIndividual) GenerateCrossoverWith(other Individual) Individual {
 }
 
 type mockRng struct {
-	fixedValue int
+	results []int
+	index   int
 }
 
-func (m *mockRng) Intn(_ int) int {
-	return m.fixedValue
+func (m *mockRng) Intn(n int) int {
+	result := m.results[m.index]
+	m.index++
+	return result % n
 }
 
 func TestFittestIndividual(t *testing.T) {
@@ -88,68 +91,62 @@ func TestFittestIndividual(t *testing.T) {
 }
 
 func TestSelectForCrossoverRng(t *testing.T) {
-	t.Run("first item is the one to be selected", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A"},
-			&mockIndividual{ID: "B"},
-			&mockIndividual{ID: "C"},
-		}
-		rng := &mockRng{0}
+	population := []*mockIndividual{
+		{ID: "A", fitness: 10.0},
+		{ID: "B", fitness: 20.0},
+		{ID: "C", fitness: 30.0},
+		{ID: "D", fitness: 40.0},
+	}
 
-		selected := selectForCrossoverRng(individuals, rng)
-		assert.Equal(t, "A", selected.ID)
-	})
-	t.Run("last item is the one to be selected with the lower part of the range", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A"},
-			&mockIndividual{ID: "B"},
-			&mockIndividual{ID: "C"},
+	t.Run("select the first individual if it is fitter", func(t *testing.T) {
+		mock := &mockRng{
+			results: []int{1, 0},
 		}
-		rng := &mockRng{3}
 
-		selected := selectForCrossoverRng(individuals, rng)
-		assert.Equal(t, "C", selected.ID)
-	})
-	t.Run("last item is the one to be selected with the upper part of the range", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A"},
-			&mockIndividual{ID: "B"},
-			&mockIndividual{ID: "C"},
-		}
-		rng := &mockRng{5}
+		selected := selectForCrossoverRng(population, mock)
 
-		selected := selectForCrossoverRng(individuals, rng)
-		assert.Equal(t, "C", selected.ID)
-	})
-	t.Run("middle item is the one to be selected with the lower part of the range", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A"},
-			&mockIndividual{ID: "B"},
-			&mockIndividual{ID: "C"},
-		}
-		rng := &mockRng{1}
-
-		selected := selectForCrossoverRng(individuals, rng)
 		assert.Equal(t, "B", selected.ID)
 	})
-	t.Run("middle item is the one to be selected with the upper part of the range", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A"},
-			&mockIndividual{ID: "B"},
-			&mockIndividual{ID: "C"},
-		}
-		rng := &mockRng{2}
 
-		selected := selectForCrossoverRng(individuals, rng)
-		assert.Equal(t, "B", selected.ID)
+	t.Run("select the second individual if it is fitter", func(t *testing.T) {
+		mock := &mockRng{
+			results: []int{1, 3}, // Will select individuals 1 and 3
+		}
+
+		selected := selectForCrossoverRng(population, mock)
+
+		assert.Equal(t, "D", selected.ID)
 	})
-	t.Run("singleton list", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A"},
-		}
-		rng := &mockRng{0}
 
-		selected := selectForCrossoverRng(individuals, rng)
-		assert.Equal(t, "A", selected.ID)
+	t.Run("select individual with higher fitness even if indices are repeated", func(t *testing.T) {
+		mock := &mockRng{
+			results: []int{2, 2},
+		}
+
+		selected := selectForCrossoverRng(population, mock)
+
+		assert.Equal(t, "C", selected.ID)
+	})
+
+	t.Run("handle nil population", func(t *testing.T) {
+		mock := &mockRng{
+			results: []int{0},
+		}
+
+		var nilPopulation []*mockIndividual
+		selected := selectForCrossoverRng(nilPopulation, mock)
+
+		assert.Nil(t, selected)
+	})
+
+	t.Run("handle empty population", func(t *testing.T) {
+		mock := &mockRng{
+			results: []int{0},
+		}
+
+		emptyPopulation := []*mockIndividual{}
+		selected := selectForCrossoverRng(emptyPopulation, mock)
+
+		assert.Nil(t, selected)
 	})
 }
