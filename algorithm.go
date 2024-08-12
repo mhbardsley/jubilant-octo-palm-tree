@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func RunGeneticAlgorithm(config Config) Individual {
-	population := make([]Individual, config.PopulationSize)
+func RunGeneticAlgorithm[T Individual](config Config[T]) T {
+	population := make([]T, config.PopulationSize)
 	for i := range config.PopulationSize {
 		population[i] = config.AlgorithmConfig.GenerateIndividual()
 	}

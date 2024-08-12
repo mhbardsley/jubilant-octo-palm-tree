@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	config := algo.Config{PopulationSize: 1000, AlgorithmConfig: &algorithm{time.Now()}}
+	config := algo.Config[*individual]{PopulationSize: 1000, AlgorithmConfig: &algorithm{time.Now()}}
 	fmt.Println(algo.RunGeneticAlgorithm(config))
 }
 
@@ -49,16 +49,16 @@ func (a *algorithm) ContinuingCondition() bool {
 	return time.Now().Sub(a.startTime) <= 10*time.Second
 }
 
-func (a *algorithm) GenerateIndividual() algo.Individual {
+func (a *algorithm) GenerateIndividual() *individual {
 	set := make([]int, 10)
 	sum := 0.0
 	for x := range 10 {
 		set[x] = numbers[rand.Intn(len(numbers))]
 		sum += float64(set[x])
 	}
-	return algo.Individual(&individual{set, &sum})
+	return &individual{set, &sum}
 }
 
-func (a *algorithm) GenerateCrossover(ind1, ind2 algo.Individual) algo.Individual {
-	return algo.Individual(&individual{append(ind1.(*individual).set[:5], ind2.(*individual).set[5:]...), nil})
+func (a *algorithm) GenerateCrossover(ind1, ind2 *individual) *individual {
+	return &individual{append(ind1.set[:5], ind2.set[5:]...), nil}
 }

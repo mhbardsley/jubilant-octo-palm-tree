@@ -11,9 +11,9 @@ type Individual interface {
 	Mutate()
 }
 
-type Config struct {
+type Config[T Individual] struct {
 	PopulationSize  int
-	AlgorithmConfig GeneticAlgorithm[Individual]
+	AlgorithmConfig GeneticAlgorithm[T]
 }
 
 type rng interface {
