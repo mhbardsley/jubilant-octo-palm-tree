@@ -1,9 +1,7 @@
 package algorithm
 
 import (
-	"cmp"
 	"math/rand"
-	"slices"
 	"sync"
 	"time"
 )
@@ -20,9 +18,6 @@ func RunGeneticAlgorithm(config Config) Individual {
 }
 
 func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T {
-	slices.SortFunc(population, func(a, b T) int {
-		return cmp.Compare(a.GetFitness(), b.GetFitness())
-	})
 	newPop := make([]T, len(population))
 	var wg sync.WaitGroup
 	for i := range len(population) {
@@ -59,25 +54,20 @@ func selectForCrossover[T Individual](population []T) T {
 }
 
 func selectForCrossoverRng[T Individual](population []T, rng rng) T {
-	populationSize := len(population)
-	// Calculate cumulative probabilities based on 1, 2, 3, ..., n
-	cumulativeProb := make([]int, populationSize)
-	cumulativeProb[0] = 1 // prob(element 0) = 1
-	for i := 1; i < populationSize; i++ {
-		cumulativeProb[i] = cumulativeProb[i-1] + (i + 1)
+	if len(population) == 0 {
+		var zero T
+		return zero
 	}
 
-	// Generate a random number between 0 and sum of cumulative probabilities
-	totalProb := cumulativeProb[populationSize-1]
-	randomNum := rng.Intn(totalProb)
+	k := 2
+	best := population[rng.Intn(len(population))]
 
-	// Find the element corresponding to the selected cumulative probability
-	for i := 0; i < populationSize; i++ {
-		if randomNum < cumulativeProb[i] {
-			return population[i]
+	for i := 1; i < k; i++ {
+		contender := population[rng.Intn(len(population))]
+		if contender.GetFitness() > best.GetFitness() {
+			best = contender
 		}
 	}
 
-	// Fallback (shouldn't happen with correct random generation and cumulative probabilities)
-	return population[populationSize-1]
+	return best
 }
