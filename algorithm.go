@@ -6,15 +6,33 @@ import (
 	"time"
 )
 
+// RunGeneticAlgorithm is the main function that runs the genetic algorithm.
 func RunGeneticAlgorithm[T Individual](config Config[T]) T {
-	population := make([]T, config.PopulationSize)
-	for i := range config.PopulationSize {
-		population[i] = config.AlgorithmConfig.GenerateIndividual()
-	}
+	population, bestIndividual := initializePopulation(config.PopulationSize, config.AlgorithmConfig.GenerateIndividual)
+
 	for config.AlgorithmConfig.ContinuingCondition() {
 		population = runIteration(population, config.AlgorithmConfig.GenerateCrossover)
+		bestIndividual = updateBestIndividual(population, bestIndividual)
 	}
-	return fittestIndividual(population)
+
+	return bestIndividual
+}
+
+// initializePopulation creates an initial population and returns it along with the initial best individual.
+func initializePopulation[T Individual](populationSize int, generateIndividual func() T) ([]T, T) {
+	population := make([]T, populationSize)
+	for i := 0; i < populationSize; i++ {
+		population[i] = generateIndividual()
+	}
+
+	bestIndividual := population[0]
+	for _, individual := range population[1:] {
+		if individual.Fitness() > bestIndividual.Fitness() {
+			bestIndividual = individual
+		}
+	}
+
+	return population, bestIndividual
 }
 
 func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T {
@@ -35,15 +53,18 @@ func runIteration[T Individual](population []T, crossoverFunc func(T, T) T) []T 
 	return newPop
 }
 
-func fittestIndividual[T Individual](population []T) T {
-	fittest := population[0]
-	for _, individual := range population[1:] {
-		if individual.GetFitness() > fittest.GetFitness() {
-			fittest = individual
+// updateBestIndividual checks if the new population contains a better individual and updates the best one found so far.
+func updateBestIndividual[T Individual](population []T, bestIndividual T) T {
+	bestFitness := bestIndividual.Fitness()
+
+	for _, individual := range population {
+		if individual.Fitness() > bestFitness {
+			bestIndividual = individual
+			bestFitness = individual.Fitness()
 		}
 	}
 
-	return fittest
+	return bestIndividual
 }
 
 func selectForCrossover[T Individual](population []T) T {
@@ -64,7 +85,7 @@ func selectForCrossoverRng[T Individual](population []T, rng rng) T {
 
 	for i := 1; i < k; i++ {
 		contender := population[rng.Intn(len(population))]
-		if contender.GetFitness() > best.GetFitness() {
+		if contender.Fitness() > best.Fitness() {
 			best = contender
 		}
 	}

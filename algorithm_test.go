@@ -1,6 +1,7 @@
 package algorithm
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,17 +12,12 @@ type mockIndividual struct {
 	fitness float64
 }
 
-func (m *mockIndividual) GetFitness() float64 {
+func (m *mockIndividual) Fitness() float64 {
 	return m.fitness
 }
 
 func (m *mockIndividual) Mutate() {
 	// Mock implementation
-}
-
-func (m *mockIndividual) GenerateCrossoverWith(other Individual) Individual {
-	// Mock implementation
-	return m
 }
 
 type mockRng struct {
@@ -35,58 +31,65 @@ func (m *mockRng) Intn(n int) int {
 	return result % n
 }
 
-func TestFittestIndividual(t *testing.T) {
-	t.Run("fittest individual is first in the slice", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A", fitness: 10},
-			&mockIndividual{ID: "B", fitness: 5},
-			&mockIndividual{ID: "C", fitness: 1},
+func TestInitializePopulation(t *testing.T) {
+	t.Run("Generated population has correct size", func(t *testing.T) {
+		populationSize := 10
+		generateIndividual := func() *mockIndividual {
+			return &mockIndividual{ID: "mock", fitness: 5.0}
 		}
 
-		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "A", fittest.ID)
+		population, _ := initializePopulation(populationSize, generateIndividual)
+
+		assert.Equal(t, populationSize, len(population))
 	})
 
-	t.Run("fittest individual is last in the slice", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A", fitness: 1},
-			&mockIndividual{ID: "B", fitness: 5},
-			&mockIndividual{ID: "C", fitness: 10},
+	t.Run("Correctly identifies the best individual", func(t *testing.T) {
+		populationSize := 5
+		staticID := 1
+
+		generateIndividual := func() *mockIndividual {
+			id := staticID
+			staticID++
+			return &mockIndividual{ID: strconv.Itoa(id), fitness: float64(id)}
 		}
 
-		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "C", fittest.ID)
+		_, bestIndividual := initializePopulation(populationSize, generateIndividual)
+
+		assert.Equal(t, "5", bestIndividual.ID)
+	})
+}
+
+func TestUpdateBestIndividual(t *testing.T) {
+	t.Run("Updates best individual when a better individual is found", func(t *testing.T) {
+		// Initial best individual with lower fitness
+		bestIndividual := &mockIndividual{ID: "1", fitness: 5.0}
+
+		// Population with an individual that has better fitness
+		population := []*mockIndividual{
+			{ID: "2", fitness: 7.0},
+			{ID: "3", fitness: 6.0},
+		}
+
+		updatedBestIndividual := updateBestIndividual(population, bestIndividual)
+
+		// Assert that the best individual is updated to the one with the highest fitness
+		assert.Equal(t, "2", updatedBestIndividual.ID)
 	})
 
-	t.Run("fittest individual is somewhere else in the slice", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A", fitness: 1},
-			&mockIndividual{ID: "B", fitness: 10},
-			&mockIndividual{ID: "C", fitness: 5},
+	t.Run("Keeps current best individual when no better individual is found", func(t *testing.T) {
+		// Initial best individual with higher fitness
+		bestIndividual := &mockIndividual{ID: "1", fitness: 8.0}
+
+		// Population with individuals that have lower fitness
+		population := []*mockIndividual{
+			{ID: "2", fitness: 7.0},
+			{ID: "3", fitness: 6.0},
 		}
 
-		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "B", fittest.ID)
-	})
+		updatedBestIndividual := updateBestIndividual(population, bestIndividual)
 
-	t.Run("there are two fittest individuals and the first is chosen", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A", fitness: 10},
-			&mockIndividual{ID: "B", fitness: 10},
-			&mockIndividual{ID: "C", fitness: 5},
-		}
-
-		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "A", fittest.ID)
-	})
-
-	t.Run("singleton slice returns the expected individual", func(t *testing.T) {
-		individuals := []*mockIndividual{
-			&mockIndividual{ID: "A", fitness: 10},
-		}
-
-		fittest := fittestIndividual(individuals)
-		assert.Equal(t, "A", fittest.ID)
+		// Assert that the best individual remains the same
+		assert.Equal(t, "1", updatedBestIndividual.ID)
 	})
 }
 
