@@ -7,7 +7,7 @@ type GeneticAlgorithm[T Individual] interface {
 }
 
 type Individual interface {
-	GetFitness() float64
+	Fitness() float64
 	Mutate()
 }
 
