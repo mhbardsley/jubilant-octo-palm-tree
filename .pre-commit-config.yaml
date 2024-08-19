@@ -16,6 +16,6 @@ repos:
       - id: go-unit-tests
 
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.59.1
+    rev: v1.60.1
     hooks:
       - id: golangci-lint

@@ -1,6 +1,6 @@
 package algorithm
 
-type GeneticAlgorithm[T Individual] interface {
+type GeneticAlgorithm[T any] interface {
 	GenerateIndividual() T
 	GenerateCrossover(T, T) T
 	ContinuingCondition() bool

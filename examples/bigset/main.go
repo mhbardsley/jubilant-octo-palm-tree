@@ -34,10 +34,16 @@ func (i *individual) Fitness() float64 {
 
 func (i *individual) Mutate() {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for x := range i.set {
+	duplicate := make([]int, len(i.set))
+	copy(duplicate, i.set)
+	for x := range duplicate {
 		if rng.Float64() < 0.1 {
-			i.set[x] = numbers[rand.Intn(len(numbers))]
+			duplicate[x] = numbers[rand.Intn(len(numbers))]
 		}
+	}
+	newInd := &individual{set: duplicate}
+	if newInd.Fitness() > i.Fitness() {
+		*i = *newInd
 	}
 }
 
@@ -46,7 +52,7 @@ type algorithm struct {
 }
 
 func (a *algorithm) ContinuingCondition() bool {
-	return time.Now().Sub(a.startTime) <= 10*time.Second
+	return time.Now().Sub(a.startTime) <= 1*time.Second
 }
 
 func (a *algorithm) GenerateIndividual() *individual {
