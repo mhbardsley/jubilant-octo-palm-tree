@@ -2,6 +2,7 @@ package algorithm
 
 import (
 	"math/rand"
+	"sort"
 	"sync"
 )
 
@@ -15,7 +16,7 @@ func RunGeneticAlgorithm[T Individual](cfg Config[T]) T {
 	best := fittest(population)
 
 	for cfg.ContinuingCondition() {
-		population = nextGeneration(population, cfg.Crossover)
+		population = nextGeneration(population, cfg)
 		if candidate := fittest(population); candidate.Fitness() > best.Fitness() {
 			best = candidate
 		}
@@ -23,20 +24,61 @@ func RunGeneticAlgorithm[T Individual](cfg Config[T]) T {
 	return best
 }
 
-func nextGeneration[T Individual](population []T, crossover func(T, T) T) []T {
-	next := make([]T, len(population))
+func nextGeneration[T Individual](population []T, cfg Config[T]) []T {
+	n := len(population)
+	next := make([]T, n)
+
+	elite := cfg.Elitism
+	if elite < 0 {
+		elite = 0
+	}
+	if elite > n {
+		elite = n
+	}
+	if elite > 0 {
+		copy(next[:elite], topK(population, elite))
+	}
+
+	k := cfg.TournamentSize
+	if k < 1 {
+		k = 2
+	}
+
 	var wg sync.WaitGroup
-	wg.Add(len(population))
-	for i := range population {
+	for i := elite; i < n; i++ {
+		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			child := crossover(tournamentSelect(population), tournamentSelect(population))
+			child := cfg.Crossover(tournamentSelect(population, k), tournamentSelect(population, k))
 			child.Mutate()
+			if cfg.LocalSearch != nil {
+				cfg.LocalSearch(child)
+			}
 			next[i] = child
 		}(i)
 	}
 	wg.Wait()
 	return next
+}
+
+// topK returns the k fittest individuals, fittest first.
+func topK[T Individual](population []T, k int) []T {
+	type scored struct {
+		ind T
+		fit float64
+	}
+	s := make([]scored, len(population))
+	for i, ind := range population {
+		s[i] = scored{ind, ind.Fitness()}
+	}
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].fit > s[j].fit
+	})
+	out := make([]T, k)
+	for i := 0; i < k; i++ {
+		out[i] = s[i].ind
+	}
+	return out
 }
 
 func fittest[T Individual](population []T) T {
@@ -49,22 +91,27 @@ func fittest[T Individual](population []T) T {
 	return best
 }
 
-// tournamentSelect picks two random individuals and returns the fitter of the two.
-func tournamentSelect[T Individual](population []T) T {
-	return tournamentSelectRng(population, defaultRng{})
+// tournamentSelect picks k random individuals and returns the fittest.
+func tournamentSelect[T Individual](population []T, k int) T {
+	return tournamentSelectRng(population, k, defaultRng{})
 }
 
-func tournamentSelectRng[T Individual](population []T, r rng) T {
+func tournamentSelectRng[T Individual](population []T, k int, r rng) T {
 	if len(population) == 0 {
 		var zero T
 		return zero
 	}
-	a := population[r.Intn(len(population))]
-	b := population[r.Intn(len(population))]
-	if b.Fitness() > a.Fitness() {
-		return b
+	if k < 1 {
+		k = 1
 	}
-	return a
+	best := population[r.Intn(len(population))]
+	for i := 1; i < k; i++ {
+		candidate := population[r.Intn(len(population))]
+		if candidate.Fitness() > best.Fitness() {
+			best = candidate
+		}
+	}
+	return best
 }
 
 type rng interface {
