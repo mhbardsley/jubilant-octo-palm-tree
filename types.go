@@ -1,21 +1,15 @@
 package algorithm
 
-type GeneticAlgorithm[T any] interface {
-	GenerateIndividual() T
-	GenerateCrossover(T, T) T
-	ContinuingCondition() bool
-}
-
+// Individual is a candidate solution that can be ranked by fitness and mutated in place.
 type Individual interface {
 	Fitness() float64
 	Mutate()
 }
 
+// Config describes a genetic algorithm: how to build individuals, how to combine them, and when to stop.
 type Config[T Individual] struct {
-	PopulationSize  int
-	AlgorithmConfig GeneticAlgorithm[T]
-}
-
-type rng interface {
-	Intn(int) int
+	PopulationSize      int
+	GenerateIndividual  func() T
+	Crossover           func(T, T) T
+	ContinuingCondition func() bool
 }
