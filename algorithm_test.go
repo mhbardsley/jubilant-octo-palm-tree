@@ -172,3 +172,67 @@ func TestNextGenerationLocalSearch(t *testing.T) {
 		assert.Equal(t, len(population)-cfg.Elitism, count)
 	})
 }
+
+func TestNextGenerationEliteLocalSearch(t *testing.T) {
+	t.Run("EliteLocalSearch is invoked exactly once per generation, on the fittest", func(t *testing.T) {
+		population := []*mockIndividual{
+			{ID: "1", fitness: 1},
+			{ID: "2", fitness: 2},
+			{ID: "3", fitness: 3},
+			{ID: "4", fitness: 4},
+		}
+		var seen []string
+		cfg := Config[*mockIndividual]{
+			Elitism: 1,
+			// Children inherit a graded fitness so the elite-pick logic has work to do.
+			Crossover: func(a, b *mockIndividual) *mockIndividual {
+				return &mockIndividual{ID: "child", fitness: 50}
+			},
+			EliteLocalSearch: func(m *mockIndividual) {
+				seen = append(seen, m.ID)
+			},
+		}
+		next := nextGeneration(population, cfg)
+
+		assert.Len(t, seen, 1, "EliteLocalSearch should run once per generation")
+		// Children all have fitness 50; the elite (top1, fitness=4) is at next[0].
+		// Children are at next[1..3]. The fittest in next is a child with fitness 50.
+		bestFit := next[0].Fitness()
+		for _, ind := range next[1:] {
+			if ind.Fitness() > bestFit {
+				bestFit = ind.Fitness()
+			}
+		}
+		assert.Equal(t, 50.0, bestFit, "test expectation: children were the fittest in next")
+		assert.Equal(t, "child", seen[0], "EliteLocalSearch should run on the fittest of next")
+	})
+
+	t.Run("EliteLocalSearch composes with LocalSearch: per-child + one for the elite", func(t *testing.T) {
+		population := []*mockIndividual{
+			{ID: "1", fitness: 1}, {ID: "2", fitness: 2},
+			{ID: "3", fitness: 3}, {ID: "4", fitness: 4},
+		}
+		var (
+			mu                    sync.Mutex
+			perChild, eliteCalled int
+		)
+		cfg := Config[*mockIndividual]{
+			Elitism: 1,
+			Crossover: func(a, b *mockIndividual) *mockIndividual {
+				return &mockIndividual{ID: "child", fitness: 99}
+			},
+			LocalSearch: func(*mockIndividual) {
+				mu.Lock()
+				perChild++
+				mu.Unlock()
+			},
+			EliteLocalSearch: func(*mockIndividual) {
+				eliteCalled++
+			},
+		}
+		nextGeneration(population, cfg)
+
+		assert.Equal(t, len(population)-cfg.Elitism, perChild)
+		assert.Equal(t, 1, eliteCalled)
+	})
+}

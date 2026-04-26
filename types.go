@@ -35,4 +35,15 @@ type Config[T Individual] struct {
 	// passed through LocalSearch (they were already polished in the generation
 	// that produced them).
 	LocalSearch func(T)
+
+	// EliteLocalSearch, if non-nil, is called once per generation on the
+	// fittest individual of the new population, after children have been bred
+	// (and after LocalSearch, if both are set). It must improve its argument
+	// in place. This is the standard memetic-GA pattern when the local-search
+	// step is too expensive to apply to every child but worth applying to the
+	// elite — at large problem sizes, per-child LocalSearch can dominate the
+	// runtime budget so completely that the GA fails to evolve a single
+	// generation; routing it through EliteLocalSearch instead keeps generations
+	// cheap and concentrates the polish where it matters most.
+	EliteLocalSearch func(T)
 }
