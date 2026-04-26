@@ -58,6 +58,22 @@ func nextGeneration[T Individual](population []T, cfg Config[T]) []T {
 		}(i)
 	}
 	wg.Wait()
+
+	// One last polish on the new generation's fittest, if requested. Runs
+	// sequentially after children are bred so the local search sees the final
+	// state of next. Modifying the slice element in place propagates because
+	// Individual is typically a pointer type.
+	if cfg.EliteLocalSearch != nil {
+		bestIdx := 0
+		bestFit := next[0].Fitness()
+		for i := 1; i < n; i++ {
+			if f := next[i].Fitness(); f > bestFit {
+				bestIdx = i
+				bestFit = f
+			}
+		}
+		cfg.EliteLocalSearch(next[bestIdx])
+	}
 	return next
 }
 
